@@ -1,0 +1,75 @@
+defaults: &defaults
+  docker:
+    - image: circleci/ruby:2.4-node
+      environment:
+        BUNDLE_PATH: vendor/bundle
+  working_directory: ~/repo
+
+version: 2
+jobs:
+  sudukuri:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "Gemfile.lock" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            bundle install --jobs=4 --retry=3 --path vendor/bundle
+
+      - run:
+          name: run command
+          command: bundle exec sudukuri.rb
+
+      - save_cache:
+          paths:
+            - ./vendor/bundle
+          key: v1-dependencies-{{ checksum "Gemfile.lock" }}
+
+  dry-run:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "Gemfile.lock" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            bundle install --jobs=4 --retry=3 --path vendor/bundle
+
+      - run:
+          name: run command
+          command: DRY_RUN=1 bundle exec sudukuri.rb
+
+      - save_cache:
+          paths:
+            - ./vendor/bundle
+          key: v1-dependencies-{{ checksum "Gemfile.lock" }}
+
+workflows:
+  version: 2
+  commit: # pushしたとき
+    jobs:
+      - dry-run
+
+  daily:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *" # UTC（JSTの10時）
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - sudukuri

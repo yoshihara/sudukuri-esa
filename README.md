@@ -1,8 +1,6 @@
 # sudukuri-esa
 
-# なにこれ？
-
-毎朝10:00に "指定したカテゴリ/前日のyyyy/前日のmm/前日のdd" のカテゴリにあるesaの記事をslackに投稿するスクリプトたちです。
+決まった時刻に "指定したカテゴリ/前日のyyyy/前日のmm/前日のdd" のカテゴリにあるesaの記事をslackに投稿するスクリプトたちです。
 CircleCIの[workflows](https://circleci.com/docs/2.0/workflows/) の仕組みを使っています。
 
 動作確認のため、リモートリポジトリへのpush時はCI上でdry-run（後述）します（ `.circleci/config.yml` に記述してあれば）
@@ -13,6 +11,7 @@ CircleCIの[workflows](https://circleci.com/docs/2.0/workflows/) の仕組みを
 
 1. esaのAPIトークンとSlackのwebhookを取得します
 1. （必要なら） `sudukuri.rb` 内のオプションを変更します
+1. （必要なら） `.circleci/config.yml` の `workflows > daily > trigger > schedule > cron` の値を変更してください（最初は朝10時になっています）
 
 ## 開発環境の場合
 
